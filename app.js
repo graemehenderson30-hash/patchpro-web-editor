@@ -23,6 +23,7 @@ function applyShow(doc) {
     document.getElementById("venue").value = showData.venue;
 
     renderPatch();
+    renderBands();
 }
 
 function renderPatch() {
@@ -44,7 +45,51 @@ function renderPatch() {
         tbody.appendChild(row);
     });
 }
+function renderBands() {
 
+    const selector = document.getElementById("bandSelector");
+    selector.innerHTML = "";
+
+    showData.scheduleItems.forEach(band => {
+
+        const option = document.createElement("option");
+        option.value = band.id;
+        option.textContent = band.artistName || "Unnamed Artist";
+
+        selector.appendChild(option);
+
+    });
+
+    selector.addEventListener("change", renderBandPatch);
+
+    renderBandPatch();
+}
+function renderBandPatch() {
+
+    const bandId = document.getElementById("bandSelector").value;
+
+    const tbody = document.querySelector("#bandPatchTable tbody");
+    tbody.innerHTML = "";
+
+    const patch = showData.bandPatches[bandId];
+
+    if(!patch) return;
+
+    patch.forEach((channel, index) => {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+        <td>${channel.channel}</td>
+        <td><input value="${channel.instrument || ""}" data-band="${bandId}" data-field="instrument" data-index="${index}"></td>
+        <td><input value="${channel.mic || ""}" data-band="${bandId}" data-field="mic" data-index="${index}"></td>
+        <td><input value="${channel.notes || ""}" data-band="${bandId}" data-field="notes" data-index="${index}"></td>
+        `;
+
+        tbody.appendChild(row);
+
+    });
+}
 async function loadShow() {
 
     const doc = await databases.getDocument(
@@ -98,10 +143,15 @@ document.addEventListener("input", (e) => {
 
     const field = e.target.dataset.field;
     const index = e.target.dataset.index;
+    const band = e.target.dataset.band;
 
     if(field && index){
 
-        showData.festivalPatch[index][field] = e.target.value;
+        if(band){
+            showData.bandPatches[band][index][field] = e.target.value;
+        } else {
+            showData.festivalPatch[index][field] = e.target.value;
+        }
 
     }
 
