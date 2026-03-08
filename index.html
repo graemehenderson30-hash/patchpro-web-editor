@@ -7,33 +7,54 @@
 <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
 
 <style>
-body {
-    font-family: -apple-system, sans-serif;
-    margin: 40px;
+table {
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
 }
 
-input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 6px;
+th, td {
+border:1px solid #ddd;
+padding:8px;
 }
 
-button {
-    margin-top: 20px;
-    padding: 10px 20px;
+th {
+background:#f3f3f3;
+text-align:left;
 }
-</style>
-</head>
 
+td input {
+width:100%;
+border:none;
+outline:none;
+}
 <body>
 
 <h1 id="title">Loading Show...</h1>
 
+<div class="meta">
 <label>Event Name</label>
 <input id="eventName">
 
 <label>Venue</label>
 <input id="venue">
+</div>
+
+<h2>Patch Sheet</h2>
+
+<table id="patchTable">
+<thead>
+<tr>
+<th>Channel</th>
+<th>Instrument</th>
+<th>Mic</th>
+<th>Notes</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
 
 <button onclick="saveShow()">Save</button>
 

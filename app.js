@@ -14,6 +14,37 @@ const documentId = urlParts[urlParts.length - 1];
 
 let showData = null;
 
+function applyShow(doc) {
+
+    showData = JSON.parse(doc.showData);
+
+    document.getElementById("title").innerText = showData.eventName;
+    document.getElementById("eventName").value = showData.eventName;
+    document.getElementById("venue").value = showData.venue;
+
+    renderPatch();
+}
+
+function renderPatch() {
+
+    const tbody = document.querySelector("#patchTable tbody");
+    tbody.innerHTML = "";
+
+    showData.festivalPatch.forEach((channel, index) => {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+        <td>${channel.channel}</td>
+        <td><input value="${channel.instrument || ""}" data-field="instrument" data-index="${index}"></td>
+        <td><input value="${channel.mic || ""}" data-field="mic" data-index="${index}"></td>
+        <td><input value="${channel.notes || ""}" data-field="notes" data-index="${index}"></td>
+        `;
+
+        tbody.appendChild(row);
+    });
+}
+
 async function loadShow() {
 
     const doc = await databases.getDocument(
@@ -22,11 +53,20 @@ async function loadShow() {
         documentId
     );
 
-    showData = JSON.parse(doc.showData);
+    applyShow(doc);
 
-    document.getElementById("title").innerText = showData.eventName;
-    document.getElementById("eventName").value = showData.eventName;
-    document.getElementById("venue").value = showData.venue;
+    // 🔴 LIVE COLLABORATION
+    client.subscribe(
+        `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents.${documentId}`,
+        (response) => {
+
+            if (response.events.includes(
+                "databases.*.collections.*.documents.*.update"
+            )) {
+                applyShow(response.payload);
+            }
+        }
+    );
 }
 
 async function saveShow() {
@@ -51,3 +91,18 @@ async function saveShow() {
 }
 
 loadShow();
+
+document.getElementById("eventName").addEventListener("change", saveShow);
+document.getElementById("venue").addEventListener("change", saveShow);
+document.addEventListener("input", (e) => {
+
+    const field = e.target.dataset.field;
+    const index = e.target.dataset.index;
+
+    if(field && index){
+
+        showData.festivalPatch[index][field] = e.target.value;
+
+    }
+
+});
