@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PatchPro Viewer</title>
+
+<script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+
+<style>
+body {
+    font-family: -apple-system, sans-serif;
+    margin: 40px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 6px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h1 id="title">Loading Show...</h1>
+
+<label>Event Name</label>
+<input id="eventName">
+
+<label>Venue</label>
+<input id="venue">
+
+<button onclick="saveShow()">Save</button>
+
+<script src="app.js"></script>
+
+</body>
+</html>
