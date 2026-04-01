@@ -80,22 +80,35 @@ function applyShow() {
 
 // ===== RENDER PATCH TABLE =====
 function renderPatch(patch) {
-  const tbody = document.querySelector("#patchTable tbody");
-  tbody.innerHTML = "";
+  const container = document.querySelector("#patchTable tbody");
+  container.innerHTML = "";
 
   if (!Array.isArray(patch)) return;
 
   patch.forEach((ch, index) => {
     const row = document.createElement("tr");
 
+    row.style.background = getChannelColor(ch);
     row.innerHTML = `
-      <td>${ch?.ch ?? "-"}</td>
-      <td><input value="${ch?.instrument || ""}" data-index="${index}" data-field="instrument"></td>
-      <td><input value="${ch?.mic || ""}" data-index="${index}" data-field="mic"></td>
-      <td><input value="${ch?.notes || ""}" data-index="${index}" data-field="notes"></td>
+      <td class="ch-num">${ch?.ch ?? "-"}</td>
+      <td>
+        <input class="input instrument" 
+          value="${ch?.instrument || ""}" 
+          data-index="${index}" data-field="instrument">
+      </td>
+      <td>
+        <input class="input mic" 
+          value="${ch?.mic || ""}" 
+          data-index="${index}" data-field="mic">
+      </td>
+      <td>
+        <input class="input notes" 
+          value="${ch?.notes || ""}" 
+          data-index="${index}" data-field="notes">
+      </td>
     `;
 
-    tbody.appendChild(row);
+    container.appendChild(row);
   });
 }
 
@@ -114,6 +127,16 @@ function renderBands() {
   selector.onchange = renderBandPatch;
 
   renderBandPatch();
+}
+
+function getChannelColor(ch) {
+  if (!ch) return "#1e1e1e";
+
+  if (ch.instrument?.toLowerCase().includes("kick")) return "#3a1f1f";
+  if (ch.instrument?.toLowerCase().includes("snare")) return "#3a2a1f";
+  if (ch.instrument?.toLowerCase().includes("vox")) return "#1f2f3a";
+
+  return "#1e1e1e";
 }
 
 // ===== RENDER BAND PATCH =====
