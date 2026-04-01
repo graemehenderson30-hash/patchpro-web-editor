@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>PatchPro Viewer</title>
+<title>PatchPro</title>
 
 <style>
 body {
@@ -17,11 +17,10 @@ body {
   display: flex;
   justify-content: center;
   padding: 12px;
-  background: #ffffff;
+  background: white;
   border-bottom: 1px solid #e5e5ea;
 }
 
-/* SEGMENTED CONTROL */
 .tabs {
   display: flex;
   background: #e5e5ea;
@@ -32,35 +31,26 @@ body {
 .tab {
   padding: 6px 16px;
   border-radius: 8px;
-  font-size: 14px;
   cursor: pointer;
-  color: #333;
 }
 
 .tab.active {
   background: white;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
-/* MAIN CONTAINER */
+/* CONTAINER */
 .container {
   max-width: 1200px;
   margin: 20px auto;
   padding: 0 20px;
 }
 
-/* CARD */
-.card {
-  background: white;
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
-
-/* TITLE */
-h1 {
+/* TITLE INPUT */
+.title-input {
   font-size: 28px;
+  width: 100%;
+  border: none;
+  background: transparent;
   margin-bottom: 10px;
 }
 
@@ -68,7 +58,7 @@ h1 {
 .row {
   display: flex;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 input {
@@ -76,20 +66,15 @@ input {
   border-radius: 10px;
   border: 1px solid #ddd;
   background: #f9f9fb;
-  font-size: 14px;
 }
 
 /* TABLE */
-.table-wrapper {
-  background: white;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
-
-table {
+.table {
   width: 100%;
   border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 th {
@@ -97,7 +82,6 @@ th {
   padding: 10px;
   font-size: 12px;
   color: #666;
-  text-transform: uppercase;
 }
 
 td {
@@ -109,27 +93,63 @@ td input {
   width: 100%;
   border: none;
   background: #f9f9fb;
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 6px;
 }
 
-td input:focus {
-  outline: none;
-  background: #ffffff;
-  box-shadow: 0 0 0 1px #007aff;
+/* BUTTONS */
+.button-blue {
+  background: #007aff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.button-green {
+  background: #34c759;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+/* ARTIST TABS */
+.artist-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.artist-tab {
+  background: #e5e5ea;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.artist-tab.active {
+  background: #007aff;
+  color: white;
+}
+
+/* FOOTER */
+.footer {
+  margin-top: 10px;
+  padding: 10px;
+  background: white;
+  border-radius: 10px;
+  display: flex;
+  gap: 40px;
 }
 
 /* HIDE */
-.hidden {
-  display: none;
-}
+.hidden { display:none; }
 </style>
 
 </head>
 
 <body>
 
-<!-- TOP BAR -->
 <div class="topbar">
   <div class="tabs">
     <div class="tab active" onclick="switchTab('schedule')">Event Schedule</div>
@@ -137,55 +157,77 @@ td input:focus {
   </div>
 </div>
 
-<!-- MAIN -->
 <div class="container">
 
-  <!-- SCHEDULE VIEW -->
+  <!-- SCHEDULE -->
   <div id="scheduleView">
 
-    <div class="card">
-      <h1 id="title">New Event</h1>
+    <input id="title" class="title-input" placeholder="New Event">
 
-      <div class="row">
-        <input id="startDate" placeholder="Start">
-        <input id="endDate" placeholder="End">
-        <input id="venue" placeholder="Venue">
-      </div>
+    <div class="row">
+      <input id="startDate" placeholder="Start">
+      <input id="endDate" placeholder="End">
+      <input id="venue" placeholder="Venue">
     </div>
 
-    <div class="card">
-      <h3>Event Schedule</h3>
-      <div id="scheduleGrid"></div>
-    </div>
+    <table class="table" id="scheduleTable">
+      <thead>
+        <tr>
+          <th>Artist</th>
+          <th>Load In</th>
+          <th>Soundcheck</th>
+          <th>Start</th>
+          <th>Finish</th>
+          <th>Rider</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <button onclick="addArtist()">ADD ARTIST</button>
 
   </div>
 
-  <!-- PATCH VIEW -->
+  <!-- PATCH -->
   <div id="patchView" class="hidden">
 
-    <div class="table-wrapper">
-      <table id="patchTable">
-        <thead>
-          <tr>
-            <th>CH</th>
-            <th>FEST</th>
-            <th>CH</th>
-            <th>ARTIST</th>
-            <th>BOX</th>
-            <th>MIC / DI</th>
-            <th>STAND</th>
-            <th>+48V</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <div class="artist-tabs" id="artistTabs"></div>
+
+    <h2 id="artistTitle">Unnamed Artist</h2>
+
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+      <button class="button-green">Summary</button>
+      <button>Stage Plan</button>
+      <button>Tech Rider</button>
+      <button>Notes</button>
+    </div>
+
+    <table class="table" id="patchTable">
+      <thead>
+        <tr>
+          <th>CH</th>
+          <th>FEST</th>
+          <th>CH</th>
+          <th>ARTIST</th>
+          <th>BOX</th>
+          <th>MIC / DI</th>
+          <th>STAND</th>
+          <th>+48V</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="footer">
+      <div>Artist Channels: <span id="statChannels">0</span></div>
+      <div>+48V Needed: <span id="stat48v">0</span></div>
+      <div>Stands Required: <span id="statStands">0</span></div>
     </div>
 
   </div>
 
 </div>
 
-<!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
 <script src="app.js"></script>
 
