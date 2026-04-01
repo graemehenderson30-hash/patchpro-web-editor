@@ -12,38 +12,46 @@ const COLLECTION_ID = "shows";
 const urlParts = window.location.pathname.split("/");
 const documentId = urlParts[urlParts.length - 1];
 
+const documentId = getDocumentId();
+loadShow(documentId);
+
 let showData = null;
+
+function getDocumentId() {
+  const parts = window.location.pathname.split("/");
+  return parts[parts.length - 1];
+}
 
 function applyShow(doc) {
 
     showData = JSON.parse(doc.showData);
 
-    document.getElementById("title").innerText = showData.eventName;
-    document.getElementById("eventName").value = showData.eventName;
-    document.getElementById("venue").value = showData.venue;
+    document.getElementById("title").innerText = showData.eventName || "Untitled Show";
+    document.getElementById("eventName").value = showData.eventName || "";
+    document.getElementById("venue").value = showData.venue || "";
 
-    renderPatch();
-    renderBands();
+    if(showData.festivalPatch){
+        renderPatch();
+    }
+
+    if(showData.scheduleItems && showData.bandPatches){
+        renderBands();
+    }
 }
 
-function renderPatch() {
+function renderPatch(patch) {
+  if (!Array.isArray(patch)) {
+    console.warn("Patch is invalid:", patch);
+    return;
+  }
 
-    const tbody = document.querySelector("#patchTable tbody");
-    tbody.innerHTML = "";
+  const container = document.getElementById("app");
 
-    showData.festivalPatch.forEach((channel, index) => {
-
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-        <td>${channel.channel}</td>
-        <td><input value="${channel.instrument || ""}" data-field="instrument" data-index="${index}"></td>
-        <td><input value="${channel.mic || ""}" data-field="mic" data-index="${index}"></td>
-        <td><input value="${channel.notes || ""}" data-field="notes" data-index="${index}"></td>
-        `;
-
-        tbody.appendChild(row);
-    });
+  container.innerHTML = patch.map(ch => `
+    <div>
+      ${ch?.ch ?? "-"} - ${ch?.name ?? ""}
+    </div>
+  `).join("");
 }
 function renderBands() {
 
@@ -90,28 +98,35 @@ function renderBandPatch() {
 
     });
 }
-async function loadShow() {
+async function loadShow(documentId) {
+  try {
+    const doc = await databases.getDocument(DB, COL, documentId);
 
-    const doc = await databases.getDocument(
-        DATABASE_ID,
-        COLLECTION_ID,
-        documentId
-    );
+    if (!doc.showData) {
+      throw new Error("No show data found");
+    }
 
-    applyShow(doc);
+    try {
+      showData = JSON.parse(doc.showData);
+    } catch (e) {
+      throw new Error("Invalid JSON in showData");
+    }
 
-    // 🔴 LIVE COLLABORATION
-    client.subscribe(
-        `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents.${documentId}`,
-        (response) => {
+    // SAFETY DEFAULTS
+    showData.festivalPatch = showData.festivalPatch || [];
+    showData.bandPatches = showData.bandPatches || [];
+    showData.scheduleItems = showData.scheduleItems || [];
 
-            if (response.events.includes(
-                "databases.*.collections.*.documents.*.update"
-            )) {
-                applyShow(response.payload);
-            }
-        }
-    );
+    renderPatch(showData.festivalPatch);
+
+  } catch (err) {
+    console.error(err);
+
+    document.body.innerHTML = `
+      <h2>⚠️ Failed to load show</h2>
+      <p>${err.message}</p>
+    `;
+  }
 }
 
 async function saveShow() {
@@ -156,3 +171,18 @@ document.addEventListener("input", (e) => {
     }
 
 });
+client.subscribe(
+  `databases.${DB}.collections.${COL}.documents.${documentId}`,
+  (res) => {
+    if (!res?.payload?.showData) return;
+
+    try {
+      const updated = JSON.parse(res.payload.showData);
+
+      renderPatch(updated.festivalPatch || []);
+
+    } catch (e) {
+      console.error("Realtime update failed", e);
+    }
+  }
+);
