@@ -8,79 +8,115 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   margin: 0;
-  background: #f5f5f7;
+  background: #f2f2f7;
   color: #1d1d1f;
 }
 
 /* TOP BAR */
 .topbar {
   display: flex;
-  justify-content: space-between;
-  padding: 10px 20px;
+  justify-content: center;
+  padding: 12px;
   background: #ffffff;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #e5e5ea;
 }
 
+/* SEGMENTED CONTROL */
 .tabs {
   display: flex;
-  gap: 10px;
+  background: #e5e5ea;
+  border-radius: 10px;
+  padding: 4px;
 }
 
 .tab {
-  padding: 6px 14px;
+  padding: 6px 16px;
   border-radius: 8px;
-  background: #e5e5ea;
+  font-size: 14px;
   cursor: pointer;
+  color: #333;
 }
 
 .tab.active {
-  background: #007aff;
-  color: white;
+  background: white;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
-/* CONTENT */
+/* MAIN CONTAINER */
 .container {
-  padding: 20px;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 20px;
 }
 
-/* INPUTS */
+/* CARD */
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* TITLE */
+h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+/* ROW */
+.row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
 input {
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #ddd;
-  width: 100%;
+  background: #f9f9fb;
+  font-size: 14px;
 }
 
-/* SCHEDULE */
-.schedule-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
-  margin-top: 20px;
+/* TABLE */
+.table-wrapper {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
-/* PATCH TABLE */
-.table {
+table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
 }
 
-.table th {
-  background: #e5e5ea;
-  padding: 10px;
-  text-align: left;
-}
-
-.table td {
-  padding: 6px;
-  border-bottom: 1px solid #ddd;
-}
-
-.table input {
-  border: none;
+th {
   background: #f2f2f7;
-  border-radius: 6px;
+  padding: 10px;
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 6px;
+  border-bottom: 1px solid #eee;
+}
+
+td input {
+  width: 100%;
+  border: none;
+  background: #f9f9fb;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+td input:focus {
+  outline: none;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px #007aff;
 }
 
 /* HIDE */
@@ -93,6 +129,7 @@ input {
 
 <body>
 
+<!-- TOP BAR -->
 <div class="topbar">
   <div class="tabs">
     <div class="tab active" onclick="switchTab('schedule')">Event Schedule</div>
@@ -100,45 +137,55 @@ input {
   </div>
 </div>
 
+<!-- MAIN -->
 <div class="container">
 
-  <!-- SCHEDULE -->
+  <!-- SCHEDULE VIEW -->
   <div id="scheduleView">
-    <h1 id="title">New Event</h1>
 
-    <div style="display:flex; gap:10px;">
-      <input id="startDate" placeholder="Start">
-      <input id="endDate" placeholder="End">
-      <input id="venue" placeholder="Venue">
+    <div class="card">
+      <h1 id="title">New Event</h1>
+
+      <div class="row">
+        <input id="startDate" placeholder="Start">
+        <input id="endDate" placeholder="End">
+        <input id="venue" placeholder="Venue">
+      </div>
     </div>
 
-    <div class="schedule-grid" id="scheduleGrid"></div>
+    <div class="card">
+      <h3>Event Schedule</h3>
+      <div id="scheduleGrid"></div>
+    </div>
+
   </div>
 
-  <!-- PATCH -->
+  <!-- PATCH VIEW -->
   <div id="patchView" class="hidden">
-    <h2>Patch Sheet</h2>
 
-    <table class="table" id="patchTable">
-      <thead>
-        <tr>
-          <th>CH</th>
-          <th>FEST</th>
-          <th>CH</th>
-          <th>ARTIST</th>
-          <th>BOX</th>
-          <th>MIC / DI</th>
-          <th>STAND</th>
-          <th>+48V</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="table-wrapper">
+      <table id="patchTable">
+        <thead>
+          <tr>
+            <th>CH</th>
+            <th>FEST</th>
+            <th>CH</th>
+            <th>ARTIST</th>
+            <th>BOX</th>
+            <th>MIC / DI</th>
+            <th>STAND</th>
+            <th>+48V</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
   </div>
 
 </div>
 
+<!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
 <script src="app.js"></script>
 
