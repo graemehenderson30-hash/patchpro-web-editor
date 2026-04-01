@@ -4,30 +4,32 @@
 <meta charset="UTF-8">
 <title>PatchPro Viewer</title>
 
-<script src="app.js"></script>
-
 <style>
 table {
-width:100%;
-border-collapse:collapse;
-margin-top:20px;
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
 }
 
 th, td {
-border:1px solid #ddd;
-padding:8px;
+  border:1px solid #ddd;
+  padding:8px;
 }
 
 th {
-background:#f3f3f3;
-text-align:left;
+  background:#f3f3f3;
+  text-align:left;
 }
 
 td input {
-width:100%;
-border:none;
-outline:none;
+  width:100%;
+  border:none;
+  outline:none;
 }
+</style>
+
+</head>
+
 <body>
 
 <h1 id="title">Loading Show...</h1>
@@ -38,7 +40,7 @@ outline:none;
 
 <label>Venue</label>
 <input id="venue">
-<div id="app"></div>
+</div>
 
 <h2>Patch Sheet</h2>
 <h2>Band Patch</h2>
@@ -56,6 +58,7 @@ outline:none;
 </thead>
 <tbody></tbody>
 </table>
+
 <table id="patchTable">
 <thead>
 <tr>
@@ -65,9 +68,7 @@ outline:none;
 <th>Notes</th>
 </tr>
 </thead>
-
 <tbody></tbody>
-
 </table>
 
 <button onclick="saveShow()">Save</button>
