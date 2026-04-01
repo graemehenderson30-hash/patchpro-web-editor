@@ -1,17 +1,7 @@
 console.log("APP STARTED");
 
-// ===== ERROR HANDLER =====
-window.onerror = function (msg, src, line) {
-  document.body.innerHTML = `
-    <h2>⚠️ App Crashed</h2>
-    <p>${msg}</p>
-    <p>Line: ${line}</p>
-  `;
-};
-
 // ===== APPWRITE =====
 const client = new Appwrite.Client();
-
 client
   .setEndpoint("https://cloud.appwrite.io/v1")
   .setProject("699771170039e58cd202");
@@ -21,44 +11,50 @@ const databases = new Appwrite.Databases(client);
 const DATABASE_ID = "699773e200344c871602";
 const COLLECTION_ID = "shows";
 
-// ===== DOC ID =====
 function getDocumentId() {
   return window.location.pathname.split("/").filter(Boolean).pop();
 }
 
 const documentId = getDocumentId();
 
-// ===== STATE =====
-let showData = {
-  eventName: "",
+// ===== STATE (MATCHES SWIFTUI) =====
+let state = {
+  eventName: "New Event",
   venue: "",
+  startDate: "",
+  endDate: "",
   scheduleItems: [],
-  bandPatches: {}
+  bandPatches: {},
+  selectedBandID: null,
+  patchMode: 48
 };
-
-let selectedArtistId = null;
 
 // ===== LOAD =====
 async function loadShow() {
   try {
     const doc = await databases.getDocument(DATABASE_ID, COLLECTION_ID, documentId);
 
-    showData = JSON.parse(doc.showData || "{}");
+    const data = JSON.parse(doc.showData || "{}");
 
-    showData.scheduleItems ||= [];
-    showData.bandPatches ||= {};
+    state = {
+      ...state,
+      ...data
+    };
 
-    applyData();
+    state.scheduleItems ||= [];
+    state.bandPatches ||= {};
+
+    applyState();
 
   } catch (err) {
     console.error(err);
   }
 }
 
-// ===== APPLY =====
-function applyData() {
-  document.getElementById("title").value = showData.eventName || "";
-  document.getElementById("venue").value = showData.venue || "";
+// ===== APPLY STATE =====
+function applyState() {
+  document.getElementById("title").value = state.eventName;
+  document.getElementById("venue").value = state.venue;
 
   renderSchedule();
   renderArtistTabs();
@@ -79,15 +75,15 @@ function renderSchedule() {
   const tbody = document.querySelector("#scheduleTable tbody");
   tbody.innerHTML = "";
 
-  showData.scheduleItems.forEach((artist, index) => {
+  state.scheduleItems.forEach((item, index) => {
     const row = document.createElement("tr");
 
     row.innerHTML = `
-      <td><input value="${artist.artistName || ""}" data-index="${index}" data-field="artistName"></td>
-      <td><input value="${artist.loadIn || ""}" data-index="${index}" data-field="loadIn"></td>
-      <td><input value="${artist.soundcheck || ""}" data-index="${index}" data-field="soundcheck"></td>
-      <td><input value="${artist.start || ""}" data-index="${index}" data-field="start"></td>
-      <td><input value="${artist.finish || ""}" data-index="${index}" data-field="finish"></td>
+      <td><input value="${item.artistName || ""}" data-index="${index}" data-field="artistName"></td>
+      <td><input value="${item.loadIn || ""}" data-index="${index}" data-field="loadIn"></td>
+      <td><input value="${item.soundcheck || ""}" data-index="${index}" data-field="soundcheck"></td>
+      <td><input value="${item.start || ""}" data-index="${index}" data-field="start"></td>
+      <td><input value="${item.finish || ""}" data-index="${index}" data-field="finish"></td>
       <td><button class="button-blue">Rider</button></td>
     `;
 
@@ -95,25 +91,28 @@ function renderSchedule() {
   });
 }
 
-// ===== ADD ARTIST =====
+// ===== ADD ARTIST (MATCH SWIFT) =====
 function addArtist() {
-  const id = "artist_" + Date.now();
+  const id = crypto.randomUUID();
 
-  showData.scheduleItems.push({
+  const newArtist = {
     id,
     artistName: "Unnamed",
     loadIn: "",
     soundcheck: "",
     start: "",
     finish: ""
-  });
+  };
 
-  showData.bandPatches[id] = [];
+  state.scheduleItems.push(newArtist);
 
-  selectedArtistId = id;
+  state.bandPatches[id] = Array.from({ length: state.patchMode }, (_, i) => ({
+    channel: i + 1
+  }));
 
-  saveShow();
-  applyData();
+  state.selectedBandID = id;
+
+  saveAndRender();
 }
 
 // ===== ARTIST TABS =====
@@ -121,14 +120,18 @@ function renderArtistTabs() {
   const container = document.getElementById("artistTabs");
   container.innerHTML = "";
 
-  showData.scheduleItems.forEach(artist => {
+  if (!state.selectedBandID && state.scheduleItems.length > 0) {
+    state.selectedBandID = state.scheduleItems[0].id;
+  }
+
+  state.scheduleItems.forEach(item => {
     const tab = document.createElement("div");
 
-    tab.className = "artist-tab" + (artist.id === selectedArtistId ? " active" : "");
-    tab.innerText = artist.artistName || "Unnamed";
+    tab.className = "artist-tab" + (item.id === state.selectedBandID ? " active" : "");
+    tab.innerText = item.artistName || "Unnamed";
 
     tab.onclick = () => {
-      selectedArtistId = artist.id;
+      state.selectedBandID = item.id;
       renderArtistTabs();
       renderPatch();
     };
@@ -136,12 +139,7 @@ function renderArtistTabs() {
     container.appendChild(tab);
   });
 
-  // default select first
-  if (!selectedArtistId && showData.scheduleItems.length > 0) {
-    selectedArtistId = showData.scheduleItems[0].id;
-  }
-
-  const selected = showData.scheduleItems.find(a => a.id === selectedArtistId);
+  const selected = state.scheduleItems.find(a => a.id === state.selectedBandID);
   document.getElementById("artistTitle").innerText = selected?.artistName || "Unnamed Artist";
 }
 
@@ -150,11 +148,13 @@ function renderPatch() {
   const tbody = document.querySelector("#patchTable tbody");
   tbody.innerHTML = "";
 
-  if (!selectedArtistId) return;
+  if (!state.selectedBandID) return;
 
-  const patch = showData.bandPatches[selectedArtistId] || [];
+  const patch = state.bandPatches[state.selectedBandID] || [];
 
-  for (let i = 0; i < 32; i++) {
+  const totalChannels = state.patchMode;
+
+  for (let i = 0; i < totalChannels; i++) {
     const ch = patch[i] || {};
 
     const row = document.createElement("tr");
@@ -178,34 +178,30 @@ function renderPatch() {
 
 // ===== STATS =====
 function updateStats() {
-  const patch = showData.bandPatches[selectedArtistId] || [];
+  const patch = state.bandPatches[state.selectedBandID] || [];
 
-  let channels = patch.length;
-  let phantom = patch.filter(p => p?.phantom).length;
-  let stands = patch.filter(p => p?.stand).length;
-
-  document.getElementById("statChannels").innerText = channels;
-  document.getElementById("stat48v").innerText = phantom;
-  document.getElementById("statStands").innerText = stands;
+  document.getElementById("statChannels").innerText = patch.length;
+  document.getElementById("stat48v").innerText = patch.filter(p => p?.phantom).length;
+  document.getElementById("statStands").innerText = patch.filter(p => p?.stand).length;
 }
 
-// ===== INPUT HANDLER =====
+// ===== INPUT =====
 document.addEventListener("input", (e) => {
   const index = e.target.dataset.index;
   const field = e.target.dataset.field;
 
   if (index !== undefined) {
-    showData.scheduleItems[index][field] = e.target.value;
+    state.scheduleItems[index][field] = e.target.value;
     triggerSave();
   }
 
   const i = e.target.dataset.i;
 
-  if (i !== undefined && selectedArtistId) {
-    const patch = showData.bandPatches[selectedArtistId];
+  if (i !== undefined && state.selectedBandID) {
+    const patch = state.bandPatches[state.selectedBandID];
 
     patch[i] ||= {};
-    patch[i][e.target.dataset.field] =
+    patch[i][field] =
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
 
     triggerSave();
@@ -221,21 +217,17 @@ function triggerSave() {
 }
 
 async function saveShow() {
-  showData.eventName = document.getElementById("title").value;
-  showData.venue = document.getElementById("venue").value;
+  state.eventName = document.getElementById("title").value;
+  state.venue = document.getElementById("venue").value;
 
   await databases.updateDocument(
     DATABASE_ID,
     COLLECTION_ID,
     documentId,
     {
-      showData: JSON.stringify(showData),
-      eventName: showData.eventName,
-      venue: showData.venue
+      showData: JSON.stringify(state)
     }
   );
-
-  console.log("Saved");
 }
 
 // ===== REALTIME =====
@@ -244,9 +236,8 @@ client.subscribe(
   (res) => {
     if (!res?.payload?.showData) return;
 
-    showData = JSON.parse(res.payload.showData);
-
-    applyData();
+    state = JSON.parse(res.payload.showData);
+    applyState();
   }
 );
 
