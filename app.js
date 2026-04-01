@@ -1,3 +1,12 @@
+console.log("APP STARTED");
+window.onerror = function (msg, src, line, col, err) {
+  document.body.innerHTML = `
+    <h2>⚠️ App Crashed</h2>
+    <p><b>${msg}</b></p>
+    <p>Line: ${line}</p>
+  `;
+};
+
 const client = new Appwrite.Client();
 
 client
