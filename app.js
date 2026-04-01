@@ -12,7 +12,8 @@ const DATABASE_ID = "699773e200344c871602";
 const COLLECTION_ID = "shows";
 
 function getDocumentId() {
-  return window.location.pathname.split("/").filter(Boolean).pop();
+  const params = new URLSearchParams(window.location.search);
+  return params.get("id");
 }
 
 const documentId = getDocumentId();
