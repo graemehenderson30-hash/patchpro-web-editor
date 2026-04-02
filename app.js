@@ -1,5 +1,16 @@
 console.log("APP STARTED");
 
+function getDocumentId() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  console.log("Document ID:", id);
+  return id;
+}
+
+console.log("APP STARTED");
+console.log("URL:", window.location.href);
+console.log("Doc ID:", getDocumentId());
+
 // ===== APPWRITE =====
 const client = new Appwrite.Client();
 client
@@ -237,10 +248,52 @@ client.subscribe(
   (res) => {
     if (!res?.payload?.showData) return;
 
-    state = JSON.parse(res.payload.showData);
+      try {
+          state = safeParse(res.payload.showData);
+          console.log("✅ STATE:", state);
+          applyState();
+      } catch (e) {
+        console.error("❌ Bad JSON from backend:", res.payload.showData);
+        return;
+      }
     applyState();
   }
 );
 
 // ===== START =====
 loadShow();
+function safeParse(raw) {
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+
+    return {
+      eventName: parsed.eventName || "",
+      venue: parsed.venue || "",
+      startDate: parsed.startDate || new Date().toISOString(),
+      endDate: parsed.endDate || new Date().toISOString(),
+      scheduleItems: parsed.scheduleItems || [],
+      festivalPatch: parsed.festivalPatch || [],
+      bandPatches: parsed.bandPatches || {},
+
+      // 🔥 FIX: handle both formats
+    patchMode:
+      typeof parsed.patchMode === "string"
+        ? parseInt(parsed.patchMode.replace("ch", ""))
+        : parsed.patchMode || 48
+    };
+
+  } catch (e) {
+    console.error("❌ Bad JSON:", raw);
+    return {
+      eventName: "",
+      venue: "",
+      startDate: new Date().toISOString(),
+      endDate: new Date().toISOString(),
+      scheduleItems: [],
+      festivalPatch: [],
+      bandPatches: {},
+      patchMode: "ch48"
+    };
+  }
+}
+
