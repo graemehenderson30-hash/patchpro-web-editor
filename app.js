@@ -85,3 +85,4 @@ function switchTab(tab) {
 
 // ---------- START ----------
 loadShow();
+setInterval(loadShow, 1000);
