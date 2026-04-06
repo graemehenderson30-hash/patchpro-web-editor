@@ -1,235 +1,34 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>PatchPro</title>
-
-<style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  margin: 0;
-  background: #f2f2f7;
-  color: #1d1d1f;
-}
-
-/* TOP BAR */
-.topbar {
-  display: flex;
-  justify-content: center;
-  padding: 12px;
-  background: white;
-  border-bottom: 1px solid #e5e5ea;
-}
-
-.tabs {
-  display: flex;
-  background: #e5e5ea;
-  border-radius: 10px;
-  padding: 4px;
-}
-
-.tab {
-  padding: 6px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.tab.active {
-  background: white;
-}
-
-/* CONTAINER */
-.container {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 0 20px;
-}
-
-/* TITLE INPUT */
-.title-input {
-  font-size: 28px;
-  width: 100%;
-  border: none;
-  background: transparent;
-  margin-bottom: 10px;
-}
-
-/* ROW */
-.row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-input {
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  background: #f9f9fb;
-}
-
-/* TABLE */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-th {
-  background: #f2f2f7;
-  padding: 10px;
-  font-size: 12px;
-  color: #666;
-}
-
-td {
-  padding: 6px;
-  border-bottom: 1px solid #eee;
-}
-
-td input {
-  width: 100%;
-  border: none;
-  background: #f9f9fb;
-  border-radius: 6px;
-  padding: 6px;
-}
-
-/* BUTTONS */
-.button-blue {
-  background: #007aff;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-}
-
-.button-green {
-  background: #34c759;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-}
-
-/* ARTIST TABS */
-.artist-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.artist-tab {
-  background: #e5e5ea;
-  padding: 6px 12px;
-  border-radius: 8px;
-}
-
-.artist-tab.active {
-  background: #007aff;
-  color: white;
-}
-
-/* FOOTER */
-.footer {
-  margin-top: 10px;
-  padding: 10px;
-  background: white;
-  border-radius: 10px;
-  display: flex;
-  gap: 40px;
-}
-
-/* HIDE */
-.hidden { display:none; }
-</style>
-
-</head>
-
 <body>
 
-<div class="topbar">
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('schedule')">Event Schedule</div>
-    <div class="tab" onclick="switchTab('patch')">Patch Sheet</div>
-  </div>
-</div>
+<div class="app">
 
-<div class="container">
+  <!-- HEADER -->
+  <div class="header">
+    <input id="title" placeholder="Event Name" />
+    <input id="venue" placeholder="Venue" />
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button onclick="switchTab('schedule')">Schedule</button>
+    <button onclick="switchTab('patch')">Patch</button>
+  </div>
 
   <!-- SCHEDULE -->
   <div id="scheduleView">
-
-    <input id="title" class="title-input" placeholder="New Event">
-
-    <div class="row">
-      <input id="startDate" placeholder="Start">
-      <input id="endDate" placeholder="End">
-      <input id="venue" placeholder="Venue">
-    </div>
-
-    <table class="table" id="scheduleTable">
-      <thead>
-        <tr>
-          <th>Artist</th>
-          <th>Load In</th>
-          <th>Soundcheck</th>
-          <th>Start</th>
-          <th>Finish</th>
-          <th>Rider</th>
-        </tr>
-      </thead>
+    <table id="scheduleTable">
       <tbody></tbody>
     </table>
-
-    <button onclick="addArtist()">ADD ARTIST</button>
-
   </div>
 
   <!-- PATCH -->
   <div id="patchView" class="hidden">
-
-    <div class="artist-tabs" id="artistTabs"></div>
-
-    <h2 id="artistTitle">Unnamed Artist</h2>
-
-    <div style="display:flex; gap:10px; margin-bottom:10px;">
-      <button class="button-green">Summary</button>
-      <button>Stage Plan</button>
-      <button>Tech Rider</button>
-      <button>Notes</button>
-    </div>
-
-    <table class="table" id="patchTable">
-      <thead>
-        <tr>
-          <th>CH</th>
-          <th>FEST</th>
-          <th>CH</th>
-          <th>ARTIST</th>
-          <th>BOX</th>
-          <th>MIC / DI</th>
-          <th>STAND</th>
-          <th>+48V</th>
-        </tr>
-      </thead>
+    <table id="patchTable">
       <tbody></tbody>
     </table>
-
-    <div class="footer">
-      <div>Artist Channels: <span id="statChannels">0</span></div>
-      <div>+48V Needed: <span id="stat48v">0</span></div>
-      <div>Stands Required: <span id="statStands">0</span></div>
-    </div>
-
   </div>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
 <script src="app.js"></script>
-
 </body>
-</html>
