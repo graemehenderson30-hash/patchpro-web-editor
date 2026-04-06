@@ -9,25 +9,34 @@ async function loadShow() {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
 
-  if (!id) {
-    console.error("No ID in URL");
-    return;
-  }
+  if (!id) return;
 
-  const res = await fetch(
-    `https://cloud.appwrite.io/v1/databases/${DATABASE_ID}/collections/${COLLECTION_ID}/documents/${id}`,
-    {
-      headers: {
-        "X-Appwrite-Project": PROJECT_ID
+  try {
+    const res = await fetch(
+      `https://cloud.appwrite.io/v1/databases/${DATABASE_ID}/collections/${COLLECTION_ID}/documents/${id}`,
+      {
+        headers: {
+          "X-Appwrite-Project": PROJECT_ID
+        }
       }
+    );
+
+    const doc = await res.json();
+
+    if (!doc.showData) return;
+
+    const newState = JSON.parse(doc.showData);
+
+    // 🔥 Only update if changed (prevents flicker)
+    if (JSON.stringify(newState) !== JSON.stringify(state)) {
+      state = newState;
+      applyState();
+      console.log("🔄 Updated from cloud");
     }
-  );
 
-  const doc = await res.json();
-
-  state = JSON.parse(doc.showData);
-
-  applyState();
+  } catch (err) {
+    console.error("❌ Load failed:", err);
+  }
 }
 
 // ---------- APPLY ----------
@@ -44,7 +53,7 @@ function renderSchedule() {
   const tbody = document.querySelector("#scheduleTable tbody");
   tbody.innerHTML = "";
 
-  state.scheduleItems?.forEach(item => {
+  (state.scheduleItems || []).forEach(item => {
     const row = document.createElement("tr");
 
     row.innerHTML = `
@@ -85,4 +94,6 @@ function switchTab(tab) {
 
 // ---------- START ----------
 loadShow();
+
+// 🔥 LIVE UPDATES (every 1 second)
 setInterval(loadShow, 1000);
